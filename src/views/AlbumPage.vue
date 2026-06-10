@@ -1,5 +1,6 @@
 <template>
   <ion-page>
+
     <ion-content class="ion-padding">
 
       <h1 class="titulo">🏆 Álbum da Copa</h1>
@@ -11,10 +12,31 @@
         {{ stickers.length }}
       </p>
 
+      <ion-searchbar
+        v-model="pesquisa"
+        placeholder="Pesquisar jogador ou seleção"
+      />
+
+      <ion-segment v-model="filtro">
+
+        <ion-segment-button value="todas">
+          <ion-label>Todas</ion-label>
+        </ion-segment-button>
+
+        <ion-segment-button value="coletadas">
+          <ion-label>Coletadas</ion-label>
+        </ion-segment-button>
+
+        <ion-segment-button value="pendentes">
+          <ion-label>Pendentes</ion-label>
+        </ion-segment-button>
+
+      </ion-segment>
+
       <div class="grid">
 
         <ion-card
-          v-for="sticker in stickers"
+          v-for="sticker in stickersFiltradas"
           :key="sticker.id"
           class="card-figurinha"
         >
@@ -64,10 +86,15 @@
       </div>
 
     </ion-content>
+
+    <AppTabs />
+
   </ion-page>
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+
 import {
   IonPage,
   IonContent,
@@ -77,15 +104,45 @@ import {
   IonCardContent,
   IonButton,
   IonImg,
-  IonBadge
+  IonBadge,
+  IonSearchbar,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel
 } from '@ionic/vue'
 
 import { useAlbum } from '../composables/useAlbum'
+import AppTabs from '../components/AppTabs.vue'
 
 const {
   stickers,
   toggleCollected
 } = useAlbum()
+
+const pesquisa = ref('')
+const filtro = ref('todas')
+
+const stickersFiltradas = computed(() => {
+  return stickers.value.filter(sticker => {
+
+    const matchPesquisa =
+      sticker.nome.toLowerCase().includes(
+        pesquisa.value.toLowerCase()
+      ) ||
+      sticker.selecao.toLowerCase().includes(
+        pesquisa.value.toLowerCase()
+      )
+
+    const matchFiltro =
+      filtro.value === 'todas'
+        ? true
+        : filtro.value === 'coletadas'
+        ? sticker.coletada
+        : !sticker.coletada
+
+    return matchPesquisa && matchFiltro
+  })
+})
 </script>
 
 <style scoped>
@@ -105,6 +162,7 @@ const {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+  padding-bottom: 90px;
 }
 
 .card-figurinha {
