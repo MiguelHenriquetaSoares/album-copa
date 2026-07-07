@@ -1,56 +1,85 @@
 <template>
   <ion-page>
+    <ion-content class="album-page ion-padding">
+      <section class="page-heading">
+        <span>Minha Colecao</span>
+        <h1>Figurinhas coletadas</h1>
+        <p>{{ collectedCount }} figurinhas no album</p>
+      </section>
 
-    <ion-content class="ion-padding">
+      <ion-loading :is-open="isLoading" message="Carregando colecao..." />
 
-      <h1>Minha Coleção</h1>
+      <StickerList
+        :stickers="collectedStickers"
+        title="Colecao vazia"
+        message="Marque figurinhas como coletadas para montar sua colecao."
+        @toggle="handleToggle"
+      />
 
-      <ion-card
-        v-for="sticker in coletadas"
-        :key="sticker.id"
-      >
+      <ion-toast
+        :is-open="toastOpen"
+        message="Colecao atualizada."
+        duration="1800"
+        color="success"
+        @didDismiss="toastOpen = false"
+      />
 
-        <ion-img :src="sticker.foto" />
-
-        <ion-card-header>
-          <ion-card-title>
-            {{ sticker.nome }}
-          </ion-card-title>
-        </ion-card-header>
-
-        <ion-card-content>
-          {{ sticker.selecao }}
-        </ion-card-content>
-
-      </ion-card>
-
+      <ion-alert
+        :is-open="alertOpen"
+        header="Algo deu errado"
+        :message="errorMessage"
+        :buttons="['OK']"
+        @didDismiss="alertOpen = false"
+      />
     </ion-content>
 
     <AppTabs />
-
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import {
-  IonPage,
+  IonAlert,
   IonContent,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonImg
+  IonLoading,
+  IonPage,
+  IonToast,
+  onIonViewWillEnter
 } from '@ionic/vue'
+import { ref } from 'vue'
 
-import { computed } from 'vue'
-import { useAlbum } from '../composables/useAlbum'
-import AppTabs from '../components/AppTabs.vue'
+import AppTabs from '@/components/AppTabs.vue'
+import StickerList from '@/components/StickerList.vue'
+import { useAlbum } from '@/composables/useAlbum'
 
-const { stickers } = useAlbum()
+const {
+  collectedCount,
+  collectedStickers,
+  errorMessage,
+  isLoading,
+  loadStickers,
+  toggleCollected
+} = useAlbum()
 
-const coletadas = computed(() =>
-  stickers.value.filter(
-    sticker => sticker.coletada
-  )
-)
+const alertOpen = ref(false)
+const toastOpen = ref(false)
+
+onIonViewWillEnter(async () => {
+  await loadStickers()
+
+  if (errorMessage.value) {
+    alertOpen.value = true
+  }
+})
+
+async function handleToggle(stickerId: number): Promise<void> {
+  const success = await toggleCollected(stickerId)
+
+  if (!success) {
+    alertOpen.value = true
+    return
+  }
+
+  toastOpen.value = true
+}
 </script>

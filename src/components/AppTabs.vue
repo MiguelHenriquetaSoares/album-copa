@@ -1,56 +1,60 @@
 <template>
-  <div class="tabs">
+  <ion-footer class="app-tabs">
+    <ion-toolbar>
+      <ion-buttons>
+        <ion-button router-link="/album" fill="clear">
+          <ion-icon slot="start" :icon="albumsOutline" />
+          Album
+        </ion-button>
 
-    <ion-button
-      fill="clear"
-      router-link="/album"
-    >
-      🏆 Álbum
-    </ion-button>
+        <ion-button router-link="/collection" fill="clear">
+          <ion-icon slot="start" :icon="libraryOutline" />
+          Colecao
+        </ion-button>
 
-    <ion-button
-      fill="clear"
-      router-link="/collection"
-    >
-      📚 Coleção
-    </ion-button>
+        <ion-button router-link="/profile" fill="clear">
+          <ion-icon slot="start" :icon="personCircleOutline" />
+          Perfil
+        </ion-button>
 
-    <ion-button
-      fill="clear"
-      router-link="/profile"
-    >
-      👤 Perfil
-    </ion-button>
-
-    <ion-button
-      fill="clear"
-      router-link="/about"
-    >
-      ℹ️ Sobre
-    </ion-button>
-
-  </div>
+        <ion-button router-link="/about" fill="clear">
+          <ion-icon slot="start" :icon="informationCircleOutline" />
+          Sobre
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
 </template>
 
 <script setup lang="ts">
-import { IonButton } from '@ionic/vue'
+import { IonButton, IonButtons, IonFooter, IonIcon, IonToolbar } from '@ionic/vue'
+import {
+  albumsOutline,
+  informationCircleOutline,
+  libraryOutline,
+  personCircleOutline
+} from 'ionicons/icons'
 </script>
 
 <style scoped>
-.tabs {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+.app-tabs {
+  border-top: 1px solid var(--album-border);
+}
 
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
+ion-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+}
 
-  background: white;
-  border-top: 1px solid #ccc;
+ion-button {
+  min-width: 0;
+  height: 52px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
 
-  padding: 10px;
-  z-index: 1000;
+ion-icon {
+  margin-right: 4px;
 }
 </style>

@@ -1,89 +1,101 @@
 <template>
   <ion-page>
-    <ion-content class="ion-padding">
+    <ion-content class="auth-page ion-padding">
+      <section class="auth-panel">
+        <h1>Cadastro</h1>
+        <p>Crie sua conta para salvar o progresso do album.</p>
 
-      <h1>Cadastro</h1>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-input v-model="name" label="Nome completo" label-placement="floating" />
+          </ion-item>
 
-      <ion-item>
-        <ion-input
-          v-model:value="nome"
-          label="Nome Completo"
-          label-placement="floating"
-        ></ion-input>
-      </ion-item>
+          <ion-item>
+            <ion-input v-model="email" label="E-mail" label-placement="floating" type="email" />
+          </ion-item>
 
-      <ion-item>
-        <ion-input
-          v-model:value="email"
-          label="E-mail"
-          label-placement="floating"
-          type="email"
-        ></ion-input>
-      </ion-item>
+          <ion-item>
+            <ion-input v-model="password" label="Senha" label-placement="floating" type="password" />
+          </ion-item>
+        </ion-list>
 
-      <ion-item>
-        <ion-input
-          v-model:value="senha"
-          label="Senha"
-          label-placement="floating"
-          type="password"
-        ></ion-input>
-      </ion-item>
+        <ion-button expand="block" class="ion-margin-top" :disabled="isLoading" @click="handleRegister">
+          <ion-spinner v-if="isLoading" name="crescent" />
+          <span v-else>Cadastrar</span>
+        </ion-button>
 
-      <ion-button
-        expand="block"
-        class="ion-margin-top"
-        @click="cadastrar"
-      >
-        Cadastrar
-      </ion-button>
+        <ion-button expand="block" fill="outline" router-link="/login">
+          Voltar
+        </ion-button>
+      </section>
 
-      <ion-button
-        expand="block"
-        fill="outline"
-        router-link="/login"
-      >
-        Voltar
-      </ion-button>
+      <ion-toast
+        :is-open="toastOpen"
+        message="Cadastro realizado com sucesso."
+        duration="1800"
+        color="success"
+        @didDismiss="toastOpen = false"
+      />
 
+      <ion-alert
+        :is-open="alertOpen"
+        header="Nao foi possivel cadastrar"
+        :message="validationMessage || errorMessage"
+        :buttons="['OK']"
+        @didDismiss="alertOpen = false"
+      />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
+import {
+  IonAlert,
+  IonButton,
+  IonContent,
+  IonInput,
+  IonItem,
+  IonList,
+  IonPage,
+  IonSpinner,
+  IonToast
+} from '@ionic/vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '../composables/useAuth'
 
-import {
-  IonPage,
-  IonContent,
-  IonItem,
-  IonInput,
-  IonButton
-} from '@ionic/vue'
+import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
-const { register } = useAuth()
+const { errorMessage, isLoading, register } = useAuth()
 
-const nome = ref('')
+const name = ref('')
 const email = ref('')
-const senha = ref('')
+const password = ref('')
+const alertOpen = ref(false)
+const toastOpen = ref(false)
+const validationMessage = ref('')
 
-function cadastrar() {
+async function handleRegister(): Promise<void> {
+  validationMessage.value = ''
 
-  console.log('Nome:', nome.value)
-  console.log('Email:', email.value)
-  console.log('Senha:', senha.value)
+  if (!name.value.trim() || !email.value.trim() || !password.value.trim()) {
+    validationMessage.value = 'Preencha nome, e-mail e senha.'
+    alertOpen.value = true
+    return
+  }
 
-  register({
-    nome: nome.value,
-    email: email.value,
-    senha: senha.value
+  const success = await register({
+    name: name.value.trim(),
+    email: email.value.trim(),
+    password: password.value
   })
 
-  alert('Usuário cadastrado!')
+  if (!success) {
+    alertOpen.value = true
+    return
+  }
 
-  router.push('/login')
+  toastOpen.value = true
+  await router.push('/album')
 }
 </script>

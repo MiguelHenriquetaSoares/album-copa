@@ -1,30 +1,33 @@
 <template>
   <ion-page>
+    <ion-content class="album-page ion-padding">
+      <section class="page-heading">
+        <span>Sobre</span>
+        <h1>Album da Copa</h1>
+        <p>Gerenciamento simples de figurinhas da Copa do Mundo.</p>
+      </section>
 
-    <ion-content class="ion-padding">
-
-      <h1>Sobre o Aplicativo</h1>
-
-      <ion-card>
-
+      <ion-card class="about-card">
         <ion-card-header>
-          <ion-card-title>
-            Álbum da Copa
-          </ion-card-title>
+          <ion-card-title>Versao 1.0.0</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
-
           <p>
-            Versão: 1.0.0
+            Acompanhe sua colecao, filtre figurinhas por status e mantenha seu progresso salvo com seguranca.
           </p>
 
           <p>
-            Aplicativo desenvolvido para gerenciamento de figurinhas da Copa do Mundo.
+            Tecnologias: Ionic Vue, Vue 3, TypeScript, Capacitor e SQLite local.
+          </p>
+
+          <p>
+            Desenvolvedor: Miguel 3° Info.
           </p>
 
           <ion-button
             expand="block"
+            fill="outline"
             href="https://www.termsfeed.com/live/terms-of-service"
             target="_blank"
           >
@@ -33,33 +36,30 @@
 
           <ion-button
             expand="block"
+            fill="outline"
             href="https://www.termsfeed.com/live/privacy-policy"
             target="_blank"
           >
-            Política de Privacidade
+            Politica de Privacidade
           </ion-button>
-
         </ion-card-content>
-
       </ion-card>
-
     </ion-content>
 
     <AppTabs />
-
   </ion-page>
 </template>
 
 <script setup lang="ts">
 import {
-  IonPage,
-  IonContent,
+  IonButton,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  IonButton
+  IonContent,
+  IonPage
 } from '@ionic/vue'
 
-import AppTabs from '../components/AppTabs.vue'
+import AppTabs from '@/components/AppTabs.vue'
 </script>
