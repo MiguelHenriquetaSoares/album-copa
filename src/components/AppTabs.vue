@@ -12,6 +12,11 @@
           Colecao
         </ion-button>
 
+        <ion-button router-link="/achievements" fill="clear">
+          <ion-icon slot="start" :icon="trophyOutline" />
+          Conquistas
+        </ion-button>
+
         <ion-button router-link="/profile" fill="clear">
           <ion-icon slot="start" :icon="personCircleOutline" />
           Perfil
@@ -32,7 +37,8 @@ import {
   albumsOutline,
   informationCircleOutline,
   libraryOutline,
-  personCircleOutline
+  personCircleOutline,
+  trophyOutline
 } from 'ionicons/icons'
 </script>
 
@@ -43,7 +49,7 @@ import {
 
 ion-buttons {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   width: 100%;
 }
 

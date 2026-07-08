@@ -2,6 +2,7 @@ import { computed, readonly, ref } from 'vue'
 
 import type { Sticker, StickerFilters, StickerStatusFilter } from '@/interfaces/sticker.interface'
 
+import { clearAchievementsCache } from '@/composables/useAchievements'
 import { StickerService } from '@/services/sticker.service'
 import { getFriendlyError } from '@/utils/error.utils'
 import { getCurrentUserId } from '@/utils/storage.utils'
@@ -94,6 +95,7 @@ export function useAlbum() {
       }
 
       await StickerService.updateCollectedStatus(userId, stickerId, nextStatus)
+      clearAchievementsCache()
       return true
     } catch (error) {
       sticker.collected = previousStatus
