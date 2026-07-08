@@ -1,6 +1,7 @@
 import type { Sticker } from '@/interfaces/sticker.interface'
 
 import { LocalDatabase } from '@/database/localDatabase'
+import { AchievementService } from '@/services/achievement.service'
 
 export class StickerService {
   static async listStickers(userId: number): Promise<Sticker[]> {
@@ -28,6 +29,7 @@ export class StickerService {
   ): Promise<void> {
     try {
       await LocalDatabase.updateStickerStatus(userId, stickerId, collected)
+      await AchievementService.checkAchievements(userId)
     } catch (error) {
       console.error(error)
       throw error

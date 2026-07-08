@@ -1,13 +1,6 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 import { RouteRecordRaw } from 'vue-router'
 
-import LoginPage from '../views/LoginPage.vue'
-import RegisterPage from '../views/RegisterPage.vue'
-import ResetPasswordPage from '../views/ResetPasswordPage.vue'
-import AlbumPage from '../views/AlbumPage.vue'
-import CollectionPage from '../views/CollectionPage.vue'
-import ProfilePage from '../views/ProfilePage.vue'
-import AboutPage from '../views/AboutPage.vue'
 import { isAuthenticated } from '@/utils/storage.utils'
 
 const routes: Array<RouteRecordRaw> = [
@@ -21,7 +14,7 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       public: true
     },
-    component: LoginPage
+    component: () => import('../views/LoginPage.vue')
   },
 
   {
@@ -29,7 +22,7 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       public: true
     },
-    component: RegisterPage
+    component: () => import('../views/RegisterPage.vue')
   },
 
   {
@@ -37,27 +30,32 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       public: true
     },
-    component: ResetPasswordPage
+    component: () => import('../views/ResetPasswordPage.vue')
   },
 
   {
     path: '/album',
-    component: AlbumPage
+    component: () => import('../views/AlbumPage.vue')
   },
 
   {
     path: '/collection',
-    component: CollectionPage
+    component: () => import('../views/CollectionPage.vue')
+  },
+
+  {
+    path: '/achievements',
+    component: () => import('../views/AchievementsPage.vue')
   },
 
   {
     path: '/profile',
-    component: ProfilePage
+    component: () => import('../views/ProfilePage.vue')
   },
 
   {
     path: '/about',
-    component: AboutPage
+    component: () => import('../views/AboutPage.vue')
   }
 ]
 
