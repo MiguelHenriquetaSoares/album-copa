@@ -27,6 +27,50 @@ async function getInitialStickers(): Promise<FigurinhaRow[]> {
   return stickerData.stickers
 }
 
+async function syncStickerCatalog(database: LocalDatabaseSchema): Promise<boolean> {
+  const currentStickers = await getInitialStickers()
+  const currentStickersById = new Map(currentStickers.map(sticker => [sticker.id, sticker]))
+  let changed = database.figurinhas.length !== currentStickers.length
+
+  database.figurinhas = currentStickers.map(currentSticker => {
+    const savedSticker = database.figurinhas.find(sticker => sticker.id === currentSticker.id)
+
+    if (!savedSticker) {
+      changed = true
+      return currentSticker
+    }
+
+    if (
+      savedSticker.nome !== currentSticker.nome ||
+      savedSticker.selecao !== currentSticker.selecao ||
+      savedSticker.foto !== currentSticker.foto ||
+      savedSticker.raridade !== currentSticker.raridade
+    ) {
+      changed = true
+      return {
+        ...savedSticker,
+        nome: currentSticker.nome,
+        selecao: currentSticker.selecao,
+        foto: currentSticker.foto,
+        raridade: currentSticker.raridade
+      }
+    }
+
+    return savedSticker
+  })
+
+  const syncedUserStickers = database.usuario_figurinhas.filter(item =>
+    currentStickersById.has(item.figurinha_id)
+  )
+
+  if (syncedUserStickers.length !== database.usuario_figurinhas.length) {
+    changed = true
+    database.usuario_figurinhas = syncedUserStickers
+  }
+
+  return changed
+}
+
 const initialAchievements: Omit<AchievementRow, 'created_at'>[] = [
   {
     id: 1,
@@ -154,6 +198,11 @@ function normalizeDatabase(database: LocalDatabaseSchema): LocalDatabaseSchema {
   database.lastUserAchievementId =
     database.lastUserAchievementId ??
     database.user_achievements.reduce((lastId, item) => Math.max(lastId, item.id), 0)
+  database.usuario_figurinhas = database.usuario_figurinhas.map(item => ({
+    ...item,
+    favorite: item.favorite ?? false,
+    collected_at: item.collected_at ?? null
+  }))
 
   seedAchievements(database)
   database.usuarios.forEach(user => createAchievementsForUser(database, user.id))
@@ -202,7 +251,9 @@ function createAlbumForUser(database: LocalDatabaseSchema, usuarioId: number): b
         id: database.lastUsuarioFigurinhaId,
         usuario_id: usuarioId,
         figurinha_id: figurinha.id,
-        coletada: false
+        coletada: false,
+        favorite: false,
+        collected_at: null
       })
     }
   })
@@ -321,14 +372,17 @@ export class LocalDatabase {
     }
   }
 
-  static async listUserStickers(userId: number): Promise<Array<FigurinhaRow & { coletada: boolean }>> {
+  static async listUserStickers(
+    userId: number
+  ): Promise<Array<FigurinhaRow & { coletada: boolean; favorite: boolean; collected_at: string | null }>> {
     await LocalDatabase.initialize()
 
     try {
       const database = readDatabase()
+      const updatedCatalog = await syncStickerCatalog(database)
       const createdStickers = createAlbumForUser(database, userId)
 
-      if (createdStickers) {
+      if (updatedCatalog || createdStickers) {
         writeDatabase(database)
       }
 
@@ -343,7 +397,9 @@ export class LocalDatabase {
 
         return {
           ...figurinha,
-          coletada: userSticker?.coletada ?? false
+          coletada: userSticker?.coletada ?? false,
+          favorite: userSticker?.favorite ?? false,
+          collected_at: userSticker?.collected_at ?? null
         }
       })
     } catch (error) {
@@ -371,18 +427,66 @@ export class LocalDatabase {
           id: database.lastUsuarioFigurinhaId,
           usuario_id: userId,
           figurinha_id: stickerId,
-          coletada: collected
+          coletada: collected,
+          favorite: false,
+          collected_at: collected ? now() : null
         }
         database.usuario_figurinhas.push(userSticker)
       }
 
+      const wasCollected = userSticker.coletada
       userSticker.coletada = collected
+
+      if (collected && !wasCollected) {
+        userSticker.collected_at = now()
+      }
+
+      if (!collected) {
+        userSticker.collected_at = null
+      }
+
       writeDatabase(database)
 
       return userSticker
     } catch (error) {
       console.error(error)
       throw new Error('Nao foi possivel atualizar a figurinha.')
+    }
+  }
+
+  static async updateFavoriteStatus(
+    userId: number,
+    stickerId: number,
+    favorite: boolean
+  ): Promise<UsuarioFigurinhaRow> {
+    await LocalDatabase.initialize()
+
+    try {
+      const database = readDatabase()
+      let userSticker = database.usuario_figurinhas.find(
+        item => item.usuario_id === userId && item.figurinha_id === stickerId
+      )
+
+      if (!userSticker) {
+        database.lastUsuarioFigurinhaId += 1
+        userSticker = {
+          id: database.lastUsuarioFigurinhaId,
+          usuario_id: userId,
+          figurinha_id: stickerId,
+          coletada: false,
+          favorite,
+          collected_at: null
+        }
+        database.usuario_figurinhas.push(userSticker)
+      }
+
+      userSticker.favorite = favorite
+      writeDatabase(database)
+
+      return userSticker
+    } catch (error) {
+      console.error(error)
+      throw new Error('Nao foi possivel atualizar o favorito.')
     }
   }
 

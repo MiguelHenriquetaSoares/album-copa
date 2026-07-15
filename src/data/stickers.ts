@@ -1,9 +1,15 @@
 import type { FigurinhaRow } from '@/types/database.types'
 
+import bellinghan from '../assets/jogadores/Bellinghan.jpg'
 import cristiano from '../assets/jogadores/cristiano.jpg'
+import haaland from '../assets/jogadores/haaland.jpg'
+import harrykane from '../assets/jogadores/Harry kane.jpg'
+import lamine from '../assets/jogadores/lamine.jpg'
 import mbappe from '../assets/jogadores/mbappe.jpg'
 import messi from '../assets/jogadores/messi.jpg'
 import neymar from '../assets/jogadores/neymar.jpg'
+import rodri from '../assets/jogadores/rodri.jpg'
+import vinijr from '../assets/jogadores/vinijr.jpg'
 
 const createdAt = '2026-01-01T00:00:00.000Z'
 
@@ -44,7 +50,7 @@ export const stickers: FigurinhaRow[] = [
     id: 5,
     nome: 'Vinicius Jr',
     selecao: 'Brasil',
-    foto: neymar,
+    foto: vinijr,
     raridade: 'Rara',
     created_at: createdAt
   },
@@ -52,7 +58,7 @@ export const stickers: FigurinhaRow[] = [
     id: 6,
     nome: 'Rodri',
     selecao: 'Espanha',
-    foto: messi,
+    foto: rodri,
     raridade: 'Comum',
     created_at: createdAt
   },
@@ -60,7 +66,7 @@ export const stickers: FigurinhaRow[] = [
     id: 7,
     nome: 'Lamine Yamal',
     selecao: 'Espanha',
-    foto: mbappe,
+    foto: lamine,
     raridade: 'Brilhante',
     created_at: createdAt
   },
@@ -68,7 +74,7 @@ export const stickers: FigurinhaRow[] = [
     id: 8,
     nome: 'Jude Bellingham',
     selecao: 'Inglaterra',
-    foto: cristiano,
+    foto: bellinghan,
     raridade: 'Rara',
     created_at: createdAt
   },
@@ -76,7 +82,7 @@ export const stickers: FigurinhaRow[] = [
     id: 9,
     nome: 'Erling Haaland',
     selecao: 'Noruega',
-    foto: mbappe,
+    foto: haaland,
     raridade: 'Comum',
     created_at: createdAt
   },
@@ -84,7 +90,7 @@ export const stickers: FigurinhaRow[] = [
     id: 10,
     nome: 'Harry Kane',
     selecao: 'Inglaterra',
-    foto: messi,
+    foto: harrykane,
     raridade: 'Comum',
     created_at: createdAt
   }

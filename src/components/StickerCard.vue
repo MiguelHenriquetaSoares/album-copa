@@ -10,6 +10,10 @@
         <ion-badge :color="sticker.collected ? 'success' : 'medium'">
           {{ sticker.collected ? 'Coletada' : 'Pendente' }}
         </ion-badge>
+        <ion-chip v-if="sticker.favorite" color="warning">
+          <ion-icon :icon="star" />
+          <ion-label>Favorita</ion-label>
+        </ion-chip>
       </div>
 
       <ion-card-title>{{ sticker.name }}</ion-card-title>
@@ -26,6 +30,17 @@
         <ion-icon slot="start" :icon="sticker.collected ? closeCircleOutline : checkmarkCircleOutline" />
         {{ sticker.collected ? 'Marcar pendente' : 'Marcar coletada' }}
       </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        size="small"
+        :color="sticker.favorite ? 'warning' : 'medium'"
+        @click="$emit('favorite', sticker.id)"
+      >
+        <ion-icon slot="start" :icon="sticker.favorite ? star : starOutline" />
+        {{ sticker.favorite ? 'Remover favorito' : 'Favoritar' }}
+      </ion-button>
     </ion-card-content>
   </ion-card>
 </template>
@@ -39,10 +54,12 @@ import {
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
+  IonChip,
   IonIcon,
-  IonImg
+  IonImg,
+  IonLabel
 } from '@ionic/vue'
-import { checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons'
+import { checkmarkCircleOutline, closeCircleOutline, star, starOutline } from 'ionicons/icons'
 import { computed } from 'vue'
 
 import type { Sticker } from '@/interfaces/sticker.interface'
@@ -53,6 +70,7 @@ const props = defineProps<{
 
 defineEmits<{
   toggle: [stickerId: number]
+  favorite: [stickerId: number]
 }>()
 
 const rarityColor = computed(() => {
@@ -126,6 +144,15 @@ ion-card-subtitle {
 }
 
 ion-card-content {
+  display: grid;
+  gap: 8px;
   padding: 8px 12px 14px;
+}
+
+ion-chip {
+  height: 24px;
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 </style>

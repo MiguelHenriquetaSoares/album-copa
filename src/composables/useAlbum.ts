@@ -1,6 +1,13 @@
 import { computed, readonly, ref } from 'vue'
 
-import type { Sticker, StickerFilters, StickerStatusFilter } from '@/interfaces/sticker.interface'
+import type {
+  AlbumStats,
+  CollectorRanking,
+  Sticker,
+  StickerFilters,
+  StickerRarity,
+  StickerStatusFilter
+} from '@/interfaces/sticker.interface'
 
 import { clearAchievementsCache } from '@/composables/useAchievements'
 import { StickerService } from '@/services/sticker.service'
@@ -25,6 +32,86 @@ const completionPercentage = computed(() => {
   return Math.round((collectedCount.value / totalCount.value) * 100)
 })
 
+const albumStats = computed<AlbumStats>(() => {
+  const collected = stickers.value.filter(sticker => sticker.collected)
+
+  return {
+    total: totalCount.value,
+    collected: collected.length,
+    missing: totalCount.value - collected.length,
+    rareCollected: collected.filter(sticker => sticker.rarity === 'Rara').length,
+    shinyCollected: collected.filter(sticker => sticker.rarity === 'Brilhante').length,
+    completionPercentage: completionPercentage.value
+  }
+})
+
+const rarityPoints: Record<StickerRarity, number> = {
+  Comum: 1,
+  Rara: 5,
+  Brilhante: 10
+}
+
+const collectorRanking = computed<CollectorRanking>(() => {
+  const score = stickers.value.reduce((total, sticker) => {
+    if (!sticker.collected) {
+      return total
+    }
+
+    return total + rarityPoints[sticker.rarity]
+  }, 0)
+
+  if (score > 500) {
+    return {
+      score,
+      level: 'Diamante',
+      nextLevel: null,
+      currentLevelMin: 501,
+      nextLevelMin: null,
+      progressPercentage: 100
+    }
+  }
+
+  if (score >= 251) {
+    return {
+      score,
+      level: 'Ouro',
+      nextLevel: 'Diamante',
+      currentLevelMin: 251,
+      nextLevelMin: 501,
+      progressPercentage: Math.round(((score - 251) / (501 - 251)) * 100)
+    }
+  }
+
+  if (score >= 101) {
+    return {
+      score,
+      level: 'Prata',
+      nextLevel: 'Ouro',
+      currentLevelMin: 101,
+      nextLevelMin: 251,
+      progressPercentage: Math.round(((score - 101) / (251 - 101)) * 100)
+    }
+  }
+
+  return {
+    score,
+    level: 'Bronze',
+    nextLevel: 'Prata',
+    currentLevelMin: 0,
+    nextLevelMin: 101,
+    progressPercentage: Math.round((score / 101) * 100)
+  }
+})
+
+const recentCollectedStickers = computed(() =>
+  [...stickers.value]
+    .filter(sticker => sticker.collected && sticker.collectedAt)
+    .sort((first, second) => {
+      return new Date(second.collectedAt ?? '').getTime() - new Date(first.collectedAt ?? '').getTime()
+    })
+    .slice(0, 10)
+)
+
 const filteredStickers = computed(() => {
   const search = filters.value.search.trim().toLowerCase()
 
@@ -37,6 +124,7 @@ const filteredStickers = computed(() => {
       filters.value.status === 'todas' ||
       (filters.value.status === 'coletadas' && sticker.collected) ||
       (filters.value.status === 'pendentes' && !sticker.collected) ||
+      (filters.value.status === 'favoritas' && sticker.favorite) ||
       (filters.value.status === 'comuns' && sticker.rarity === 'Comum') ||
       (filters.value.status === 'raras' && sticker.rarity === 'Rara') ||
       (filters.value.status === 'brilhantes' && sticker.rarity === 'Brilhante')
@@ -82,6 +170,7 @@ export function useAlbum() {
     }
 
     const previousStatus = sticker.collected
+    const previousCollectedAt = sticker.collectedAt
     const nextStatus = !previousStatus
 
     sticker.collected = nextStatus
@@ -95,11 +184,43 @@ export function useAlbum() {
       }
 
       await StickerService.updateCollectedStatus(userId, stickerId, nextStatus)
+      sticker.collectedAt = nextStatus ? new Date().toISOString() : null
       clearAchievementsCache()
       return true
     } catch (error) {
       sticker.collected = previousStatus
+      sticker.collectedAt = previousCollectedAt
       errorMessage.value = getFriendlyError(error, 'Nao foi possivel atualizar a figurinha.')
+      return false
+    }
+  }
+
+  async function toggleFavorite(stickerId: number): Promise<boolean> {
+    const sticker = stickers.value.find(item => item.id === stickerId)
+
+    if (!sticker) {
+      errorMessage.value = 'Figurinha nao encontrada.'
+      return false
+    }
+
+    const previousStatus = sticker.favorite
+    const nextStatus = !previousStatus
+
+    sticker.favorite = nextStatus
+    errorMessage.value = ''
+
+    try {
+      const userId = getCurrentUserId()
+
+      if (!userId) {
+        throw new Error('Faca login para alterar seus favoritos.')
+      }
+
+      await StickerService.updateFavoriteStatus(userId, stickerId, nextStatus)
+      return true
+    } catch (error) {
+      sticker.favorite = previousStatus
+      errorMessage.value = getFriendlyError(error, 'Nao foi possivel atualizar o favorito.')
       return false
     }
   }
@@ -113,18 +234,22 @@ export function useAlbum() {
   }
 
   return {
+    albumStats,
     collectedCount,
     collectedStickers,
     completionPercentage,
+    collectorRanking,
     errorMessage: readonly(errorMessage),
     filteredStickers,
     filters,
     isLoading: readonly(isLoading),
+    recentCollectedStickers,
     stickers: readonly(stickers),
     totalCount,
     loadStickers,
     setSearch,
     setStatusFilter,
-    toggleCollected
+    toggleCollected,
+    toggleFavorite
   }
 }
