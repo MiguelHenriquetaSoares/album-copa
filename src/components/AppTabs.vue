@@ -17,6 +17,11 @@
           Conquistas
         </ion-button>
 
+        <ion-button router-link="/statistics" fill="clear">
+          <ion-icon slot="start" :icon="statsChartOutline" />
+          Estatísticas
+        </ion-button>
+
         <ion-button router-link="/profile" fill="clear">
           <ion-icon slot="start" :icon="personCircleOutline" />
           Perfil
@@ -38,6 +43,7 @@ import {
   informationCircleOutline,
   libraryOutline,
   personCircleOutline,
+  statsChartOutline,
   trophyOutline
 } from 'ionicons/icons'
 </script>
@@ -49,7 +55,7 @@ import {
 
 ion-buttons {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   width: 100%;
 }
 
@@ -62,5 +68,16 @@ ion-button {
 
 ion-icon {
   margin-right: 4px;
+}
+
+@media (max-width: 580px) {
+  ion-button {
+    height: 46px;
+    font-size: 0.64rem;
+  }
+
+  ion-icon {
+    display: none;
+  }
 }
 </style>

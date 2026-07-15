@@ -22,6 +22,8 @@ export interface UsuarioFigurinhaRow {
   usuario_id: number
   figurinha_id: number
   coletada: boolean
+  favorite: boolean
+  collected_at: string | null
 }
 
 export interface AchievementRow {

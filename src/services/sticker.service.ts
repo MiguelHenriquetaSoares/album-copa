@@ -14,7 +14,9 @@ export class StickerService {
         country: sticker.selecao,
         imageUrl: sticker.foto,
         rarity: sticker.raridade,
-        collected: sticker.coletada
+        collected: sticker.coletada,
+        favorite: sticker.favorite,
+        collectedAt: sticker.collected_at
       }))
     } catch (error) {
       console.error(error)
@@ -30,6 +32,19 @@ export class StickerService {
     try {
       await LocalDatabase.updateStickerStatus(userId, stickerId, collected)
       await AchievementService.checkAchievements(userId)
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
+
+  static async updateFavoriteStatus(
+    userId: number,
+    stickerId: number,
+    favorite: boolean
+  ): Promise<void> {
+    try {
+      await LocalDatabase.updateFavoriteStatus(userId, stickerId, favorite)
     } catch (error) {
       console.error(error)
       throw error
